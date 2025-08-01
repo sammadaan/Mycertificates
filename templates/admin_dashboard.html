@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Sistema de Coleta Jurídica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3498db;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-active {
+            background: #27ae60;
+        }
+
+        .status-inactive {
+            background: #e74c3c;
+        }
+
+        .status-warning {
+            background: #f39c12;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .results-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .quality-score {
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .quality-high {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .quality-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .quality-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #27ae60;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #f39c12;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #e74c3c;
+        }
+
+        .logs-section {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .results-table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ Admin Dashboard - Sistema de Coleta Jurídica</h1>
+        <p>Monitoramento e gerenciamento do sistema de coleta automatizada de dados jurídicos</p>
+    </div>
+
+    <div class="container">
+        <!-- Alerts Section -->
+        <div id="alerts"></div>
+
+        <!-- Statistics Dashboard -->
+        <div class="dashboard-grid">
+            <!-- Database Stats -->
+            <div class="card">
+                <div class="card-title">
+                    📊 Estatísticas do Banco de Dados
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-docs">-</span>
+                        <div class="stat-label">Total de Documentos</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="recent-docs">-</span>
+                        <div class="stat-label">Documentos Recentes</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="avg-quality">-</span>
+                        <div class="stat-label">Qualidade Média</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="avg-words">-</span>
+                        <div class="stat-label">Palavras Médias</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduler Status -->
+            <div class="card">
+                <div class="card-title">
+                    ⏰ Status do Agendador
+                </div>
+                <div id="scheduler-status">
+                    <p><span class="status-indicator" id="scheduler-indicator"></span><span id="scheduler-text">Carregando...</span></p>
+                    <p id="next-run">Próxima execução: -</p>
+                    <p id="last-run">Última execução: -</p>
+                </div>
+            </div>
+
+            <!-- Processing Stats -->
+            <div class="card">
+                <div class="card-title">
+                    🔄 Processamento de Dados
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="processed-docs">-</span>
+                        <div class="stat-label">Processados</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="ai-available">-</span>
+                        <div class="stat-label">IA Disponível</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sources Distribution -->
+            <div class="card">
+                <div class="card-title">
+                    🏢 Distribuição por Fonte
+                </div>
+                <div id="sources-distribution">
+                    <p>Carregando...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panels -->
+        <div class="controls-section">
+            <!-- Scraping Controls -->
+            <div class="card">
+                <div class="card-title">
+                    🕷️ Controles de Coleta
+                </div>
+                <button class="btn btn-primary" onclick="runManualScraping()">
+                    ▶️ Executar Coleta Manual
+                </button>
+                <button class="btn btn-success" onclick="startScheduler()">
+                    🚀 Iniciar Agendador
+                </button>
+                <button class="btn btn-warning" onclick="stopScheduler()">
+                    ⏹️ Parar Agendador
+                </button>
+            </div>
+
+            <!-- Processing Controls -->
+            <div class="card">
+                <div class="card-title">
+                    ⚙️ Processamento de Dados
+                </div>
+                <button class="btn btn-primary" onclick="processTexts()">
+                    🔄 Processar Textos
+                </button>
+                <button class="btn btn-success" onclick="generateTrainingData()">
+                    🎓 Gerar Dados de Treino
+                </button>
+            </div>
+
+            <!-- Database Controls -->
+            <div class="card">
+                <div class="card-title">
+                    🗄️ Gerenciamento de Banco
+                </div>
+                <button class="btn btn-warning" onclick="cleanupDatabase()">
+                    🧹 Limpar Dados Antigos
+                </button>
+                <button class="btn btn-primary" onclick="refreshStats()">
+                    🔄 Atualizar Estatísticas
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Browse Section -->
+        <div class="search-section">
+            <div class="card-title">
+                🔍 Pesquisar Dados Coletados
+            </div>
+            <div class="search-form">
+                <input type="text" class="search-input" id="search-query" placeholder="Digite sua pesquisa...">
+                <button class="btn btn-primary" onclick="searchDatabase()">Pesquisar</button>
+                <button class="btn btn-success" onclick="loadLatestTexts()">Últimos Textos</button>
+            </div>
+            <div id="search-results">
+                <p>Use a pesquisa acima para encontrar documentos ou clique em "Últimos Textos" para ver os mais recentes.</p>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="logs-section">
+            <div class="card-title" style="color: #ecf0f1; margin-bottom: 1rem;">
+                📋 Logs do Sistema
+            </div>
+            <div id="system-logs">
+                Sistema iniciado. Aguardando atividade...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentStats = {};
+        let refreshInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStats();
+            startAutoRefresh();
+            
+            // Setup search on enter
+            document.getElementById('search-query').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchDatabase();
+                }
+            });
+        });
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(refreshStats, 30000); // Refresh every 30 seconds
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertsDiv = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            alertsDiv.appendChild(alert);
+            
+            // Remove alert after 5 seconds
+            setTimeout(() => {
+                alertsDiv.removeChild(alert);
+            }, 5000);
+        }
+
+        function logMessage(message) {
+            const logsDiv = document.getElementById('system-logs');
+            const timestamp = new Date().toLocaleString();
+            logsDiv.innerHTML += `\n[${timestamp}] ${message}`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        async function refreshStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentStats = data;
+                    updateDashboard(data);
+                    logMessage('Estatísticas atualizadas com sucesso');
+                } else {
+                    throw new Error(data.error || 'Erro ao carregar estatísticas');
+                }
+            } catch (error) {
+                console.error('Error refreshing stats:', error);
+                showAlert(`Erro ao atualizar estatísticas: ${error.message}`, 'error');
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update database stats
+            const dbStats = data.database || {};
+            document.getElementById('total-docs').textContent = dbStats.total_documents || 0;
+            document.getElementById('recent-docs').textContent = dbStats.recent_documents || 0;
+            document.getElementById('avg-quality').textContent = (dbStats.average_quality_score || 0).toFixed(2);
+            document.getElementById('avg-words').textContent = Math.round(dbStats.average_word_count || 0);
+
+            // Update scheduler status
+            const schedulerStats = data.scheduler || {};
+            const indicator = document.getElementById('scheduler-indicator');
+            const statusText = document.getElementById('scheduler-text');
+            
+            if (schedulerStats.is_running) {
+                indicator.className = 'status-indicator status-active';
+                statusText.textContent = 'Agendador Ativo';
+            } else {
+                indicator.className = 'status-indicator status-inactive';
+                statusText.textContent = 'Agendador Inativo';
+            }
+            
+            document.getElementById('next-run').textContent = `Próxima execução: ${schedulerStats.next_run || 'N/A'}`;
+            
+            // Update processing stats
+            const processingStats = data.processing || {};
+            document.getElementById('processed-docs').textContent = processingStats.processed_documents || 0;
+            document.getElementById('ai-available').textContent = processingStats.ai_enhancement_available ? '✅' : '❌';
+
+            // Update sources distribution
+            const sourcesDiv = document.getElementById('sources-distribution');
+            const sourcesByCount = dbStats.documents_by_source || {};
+            
+            if (Object.keys(sourcesByCount).length > 0) {
+                let sourcesHtml = '';
+                for (const [source, count] of Object.entries(sourcesByCount)) {
+                    sourcesHtml += `<p><strong>${source}:</strong> ${count} documentos</p>`;
+                }
+                sourcesDiv.innerHTML = sourcesHtml;
+            } else {
+                sourcesDiv.innerHTML = '<p>Nenhum dado disponível</p>';
+            }
+        }
+
+        async function runManualScraping() {
+            try {
+                showAlert('Iniciando coleta manual...', 'warning');
+                logMessage('Iniciando coleta manual de dados');
+                
+                const response = await fetch('/api/admin/scrape/manual', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({limit: 25})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Coleta manual iniciada com sucesso!', 'success');
+                    logMessage('Coleta manual iniciada em background');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showAlert(`Erro na coleta manual: ${error.message}`, 'error');
+                logMessage(`Erro na coleta manual: ${error.message}`);
+            }
+        }
+
+        async function startScheduler() {
+            try {
+                const response = await fetch('/api/admin/scheduler/start', {method: 'POST'});
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Agendador iniciado com sucesso!', 'success');
+                    logMessage('Agendador automático iniciado');
+                    refreshStats();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showAlert(`Erro ao iniciar agendador: ${error.message}`, 'error');
+            }
+        }
+
+        async function stopScheduler() {
+            try {
+                const response = await fetch('/api/admin/scheduler/stop', {method: 'POST'});
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Agendador parado com sucesso!', 'success');
+                    logMessage('Agendador automático parado');
+                    refreshStats();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showAlert(`Erro ao parar agendador: ${error.message}`, 'error');
+            }
+        }
+
+        async function processTexts() {
+            try {
+                showAlert('Iniciando processamento de textos...', 'warning');
+                logMessage('Iniciando processamento de textos não processados');
+                
+                const response = await fetch('/api/admin/process/texts', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({batch_size: 10})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Processamento de textos iniciado!', 'success');
+                    logMessage('Processamento de textos iniciado em background');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showAlert(`Erro no processamento: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateTrainingData() {
+            try {
+                showAlert('Gerando dados de treinamento...', 'warning');
+                
+                const response = await fetch('/api/admin/training-data/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({limit: 100})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`Dados de treinamento gerados: ${data.examples_count} exemplos`, 'success');
+                    logMessage(`Gerados ${data.examples_count} exemplos de treinamento`);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showAlert(`Erro na geração de dados: ${error.message}`, 'error');
+            }
+        }
+
+        async function cleanupDatabase() {
+            if (!confirm('Tem certeza que deseja limpar dados antigos? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/database/cleanup', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({days_to_keep: 90})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`Limpeza concluída: ${data.deleted_records} registros removidos`, 'success');
+                    logMessage(`Limpeza do banco: ${data.deleted_records} registros removidos`);
+                    refreshStats();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showAlert(`Erro na limpeza: ${error.message}`, 'error');
+            }
+        }
+
+        async function searchDatabase() {
+            const query = document.getElementById('search-query').value.trim();
+            const resultsDiv = document.getElementById('search-results');
+            
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Pesquisando...</div>';
+            
+            try {
+                const response = await fetch(`/api/admin/database/search?q=${encodeURIComponent(query)}&limit=50`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySearchResults(data.results, query);
+                    logMessage(`Pesquisa realizada: "${query}" - ${data.total} resultados`);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="alert alert-error">Erro na pesquisa: ${error.message}</p>`;
+            }
+        }
+
+        async function loadLatestTexts() {
+            document.getElementById('search-query').value = '';
+            searchDatabase();
+        }
+
+        function displaySearchResults(results, query) {
+            const resultsDiv = document.getElementById('search-results');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p>Nenhum resultado encontrado.</p>';
+                return;
+            }
+            
+            let tableHtml = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Fonte</th>
+                            <th>Categoria</th>
+                            <th>Qualidade</th>
+                            <th>Palavras</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const result of results) {
+                const qualityClass = result.quality_score > 0.7 ? 'quality-high' : 
+                                   result.quality_score > 0.4 ? 'quality-medium' : 'quality-low';
+                
+                const date = result.date_scraped ? new Date(result.date_scraped).toLocaleDateString() : 'N/A';
+                const status = result.is_processed ? '✅ Processado' : '⏳ Pendente';
+                
+                tableHtml += `
+                    <tr>
+                        <td title="${result.content}">${result.title || 'Sem título'}</td>
+                        <td>${result.source}</td>
+                        <td>${result.category || 'N/A'}</td>
+                        <td><span class="quality-score ${qualityClass}">${result.quality_score.toFixed(2)}</span></td>
+                        <td>${result.word_count}</td>
+                        <td>${date}</td>
+                        <td>${status}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHtml += '</tbody></table>';
+            resultsDiv.innerHTML = tableHtml;
+        }
+    </script>
+</body>
+</html>

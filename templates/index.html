@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Correção Jurídica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1200px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .text-input {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .results-section {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #4a90e2;
+        }
+
+        .result-card.original {
+            border-left-color: #dc3545;
+        }
+
+        .result-card.corrected {
+            border-left-color: #28a745;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-text {
+            line-height: 1.6;
+            color: #495057;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4a90e2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: 90vh;
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .chat-container {
+                padding: 20px;
+            }
+            
+            .text-input {
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ Assistente de Correção Jurídica</h1>
+            <p>Melhore a gramática e coesão dos seus textos legais mantendo o significado intacto</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="error" id="error"></div>
+            
+            <div class="input-section">
+                <label class="input-label" for="legalText">
+                    📝 Cole seu texto jurídico aqui:
+                </label>
+                <textarea 
+                    id="legalText" 
+                    class="text-input" 
+                    placeholder="Exemplo: O cara simplesmente não fez o que prometeu no papel que a gente assinou, e agora estou perdendo dinheiro e me sentindo super estressado com isso..."
+                ></textarea>
+            </div>
+            
+            <div class="button-container">
+                <button class="btn btn-primary" id="correctBtn">
+                    <span id="btnText">✨ Corrigir Texto</span>
+                    <span id="btnSpinner" style="display: none;">
+                        <div class="spinner" style="width: 18px; height: 18px; border-width: 2px; margin: 0;"></div>
+                    </span>
+                </button>
+                <button class="btn btn-secondary" id="clearBtn">
+                    🗑️ Limpar
+                </button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analisando e corrigindo seu texto jurídico...</p>
+            </div>
+            
+            <div class="results-section" id="results">
+                <div class="result-card original">
+                    <div class="result-title">
+                        📄 Texto Original
+                    </div>
+                    <div class="result-text" id="originalText"></div>
+                </div>
+                
+                <div class="result-card corrected">
+                    <div class="result-title">
+                        ✅ Texto Corrigido
+                    </div>
+                    <div class="result-text" id="correctedText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('legalText');
+        const correctBtn = document.getElementById('correctBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const originalText = document.getElementById('originalText');
+        const correctedText = document.getElementById('correctedText');
+        const error = document.getElementById('error');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+
+        // Sample text for demonstration
+        const sampleText = `O cara simplesmente não fez o que prometeu no papel que a gente assinou, e agora estou perdendo dinheiro e me sentindo super estressado com isso. Tentei conversar com ele várias vezes, mas ele não responde, e agora acho que o tribunal precisa resolver isso porque não é justo.`;
+
+        function showError(message) {
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => {
+                error.style.display = 'none';
+            }, 5000);
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                correctBtn.disabled = true;
+                btnText.style.display = 'none';
+                btnSpinner.style.display = 'inline-flex';
+                loading.classList.add('show');
+                results.style.display = 'none';
+            } else {
+                correctBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnSpinner.style.display = 'none';
+                loading.classList.remove('show');
+            }
+        }
+
+        async function correctText() {
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                showError('Por favor, insira um texto para correção.');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/correct', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro na requisição');
+                }
+
+                if (data.success) {
+                    originalText.textContent = data.original;
+                    correctedText.textContent = data.corrected;
+                    results.style.display = 'flex';
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+
+            } catch (err) {
+                console.error('Error:', err);
+                showError(`Erro: ${err.message}`);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function clearText() {
+            textInput.value = '';
+            results.style.display = 'none';
+            error.style.display = 'none';
+            textInput.focus();
+        }
+
+        function loadSample() {
+            textInput.value = sampleText;
+            textInput.focus();
+        }
+
+        // Event listeners
+        correctBtn.addEventListener('click', correctText);
+        clearBtn.addEventListener('click', clearText);
+
+        // Enter key support (Ctrl+Enter to submit)
+        textInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                correctText();
+            }
+        });
+
+        // Auto-resize textarea
+        textInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+        });
+
+        // Load sample text on page load for demonstration
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadSample();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
